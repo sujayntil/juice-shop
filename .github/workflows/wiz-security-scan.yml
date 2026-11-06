@@ -1,3 +1,4 @@
+
 name: Wiz Security Scan
 
 on:
@@ -5,7 +6,6 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
-  
   workflow_dispatch:
 
 permissions:
@@ -20,10 +20,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Wiz CLI
+      - name: Install Wiz CLI v1
         run: |
-          curl -sSLo wizcli https://wizcli.app.wiz.io/wizcli
+          curl -fL \
+            https://downloads.wiz.io/v1/wizcli/latest/wizcli-linux-amd64 \
+            -o wizcli
           chmod +x wizcli
+          ./wizcli version
+
+      - name: Verify credentials are present
+        env:
+          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+          WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
+        run: |
+          test -n "$WIZ_CLIENT_ID" || {
+            echo "WIZ_CLIENT_ID is missing"
+            exit 1
+          }
+
+          test -n "$WIZ_CLIENT_SECRET" || {
+            echo "WIZ_CLIENT_SECRET is missing"
+            exit 1
+          }
+
+          echo "Both credentials are present."
 
       - name: Authenticate with Wiz
         env:

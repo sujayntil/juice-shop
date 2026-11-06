@@ -1,0 +1,39 @@
+name: Wiz Security Scan
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wiz-scan:
+    name: Wiz CLI Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Wiz CLI
+        run: |
+          curl -sSLo wizcli https://wizcli.app.wiz.io/wizcli
+          chmod +x wizcli
+
+      - name: Authenticate with Wiz
+        env:
+          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+          WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
+        run: |
+          ./wizcli auth \
+            --id "$WIZ_CLIENT_ID" \
+            --secret "$WIZ_CLIENT_SECRET"
+
+      - name: Scan Infrastructure as Code
+        run: |
+          ./wizcli iac scan --path .

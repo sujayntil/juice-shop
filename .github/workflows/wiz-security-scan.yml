@@ -13,11 +13,11 @@ permissions:
 
 jobs:
   wiz-scan:
-    name: Wiz CLI Security Scan
+    name: Wiz CLI v1 Security Scan
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Install Wiz CLI v1
@@ -28,23 +28,6 @@ jobs:
           chmod +x wizcli
           ./wizcli version
 
-      - name: Verify credentials are present
-        env:
-          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
-          WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
-        run: |
-          test -n "$WIZ_CLIENT_ID" || {
-            echo "WIZ_CLIENT_ID is missing"
-            exit 1
-          }
-
-          test -n "$WIZ_CLIENT_SECRET" || {
-            echo "WIZ_CLIENT_SECRET is missing"
-            exit 1
-          }
-
-          echo "Both credentials are present."
-
       - name: Authenticate with Wiz
         env:
           WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
@@ -54,6 +37,7 @@ jobs:
             --id "$WIZ_CLIENT_ID" \
             --secret "$WIZ_CLIENT_SECRET"
 
-      - name: Scan Infrastructure as Code
+      - name: Scan Repository and Publish Results
         run: |
-          ./wizcli iac scan --path .
+          ./wizcli scan dir .
+
